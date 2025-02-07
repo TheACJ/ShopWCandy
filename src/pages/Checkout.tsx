@@ -2,11 +2,10 @@
 import { useState, useEffect } from 'react';
 import { useShoppingCart } from '../context/ShoppingCartContext';
 import { CheckCircle, CreditCard, Loader, Truck } from 'lucide-react';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabaseClient';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
+
+
 
 interface ShippingForm {
   firstName: string;
@@ -36,6 +35,7 @@ interface UserInfo {
   zipCode: string;
 }
 
+
 export default function Checkout() {
   const { cartItems, cartQuantity, clearCart } = useShoppingCart();
   const [products, setProducts] = useState<Product[]>([]);
@@ -55,6 +55,14 @@ export default function Checkout() {
     fetchUserInfo();
     fetchProducts();
   }, []);
+
+  const generateOrderNumber = () => {
+    const timestamp = Date.now().toString();
+    const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+    return `ORD-${timestamp.slice(-8)}${random}`;
+  };
+
+  
 
   const fetchUserInfo = async () => {
     try {
@@ -201,32 +209,152 @@ export default function Checkout() {
     );
   };
 
+  const createOrder = async () => {
+    try {
+      // Get current user from Supabase Auth
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('Please log in to complete your purchase');
+      }
+  
+      const orderNumber = generateOrderNumber();
+  
+      // Ensure there are items in the cart
+      if (!cartItems.length) {
+        throw new Error('Your cart is empty');
+      }
+  
+      // Prepare the order items payload by validating product availability and prices
+      const orderItems = await Promise.all(
+        cartItems.map(async (item) => {
+          const product = getProductById(item.id);
+          if (!product) {
+            throw new Error(`Product not found: ${item.id}`);
+          }
+          console.log('Product:', product.price);
+          console.log('Item:', item.quantity);
+          console.log('Total:', product.price * item.quantity);
+          return {
+            product_id: item.id,
+            quantity: item.quantity,
+            lineitem_total: product.price * item.quantity, // Calculate line total
+          };
+        })
+      );
+  
+      // Create the order without embedding order items directly
+      const orderData = {
+        user_id: user.id, // This is a valid UUID string from Supabase Auth
+        order_number: orderNumber,
+        status: 'pending',
+        total: total, // Ensure this is calculated correctly elsewhere
+        shipping_fee: shipping,
+        discount: 0,
+        payment_method: null,
+        paid: false,
+      };
+  
+      // Insert the order into the orders table and return the inserted order row
+      const { data: order, error } = await supabase
+        .from('orders')
+        .insert([orderData])
+        .select()
+        .single();
+  
+      if (error) {
+        throw new Error(`Failed to create order: ${error.message}`);
+      }
+      if (!order) {
+        throw new Error('Order creation failed');
+      }
+  
+      // Build payload for order_items by adding the order_id to each item
+      const orderItemsPayload = orderItems.map((item) => ({
+        order_id: order.id, // Use the id from the newly created order
+        product_id: item.product_id,
+        quantity: item.quantity,
+        lineitem_total: item.lineitem_total,
+      }));
+  
+      // Insert all order items into the order_items table
+      const { error: orderItemsError } = await supabase
+        .from('order_items')
+        .insert(orderItemsPayload);
+  
+      if (orderItemsError) {
+        throw new Error(`Failed to create order items: ${orderItemsError.message}`);
+      }
+  
+      return order;
+    } catch (error) {
+      console.error('Error creating order:', error);
+      throw error; // Propagate the error to be handled by the calling function
+    }
+  };
+  
+
   const handlePaystackPayment = async () => {
     if (!validateShippingInfo()) {
       alert('Please fill in all required shipping information.');
       return;
     }
-
+  
     try {
+      // First update user info
       await updateUserInfo();
       
+      // Create the order first
+      const order = await createOrder();
+      
+      if (!order) {
+        throw new Error('Failed to create order');
+      }
+  
+      // Initialize Paystack payment
       const handler = (window as any).PaystackPop.setup({
         key: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
         email: shippingInfo.email,
-        amount: total * 100,
+        amount: total * 100, // Convert to kobo (smallest currency unit)
         currency: 'NGN',
+        metadata: {
+          order_id: order.id,
+          custom_fields: [
+            {
+              display_name: "Order Number",
+              variable_name: "order_number",
+              value: order.order_number
+            }
+          ]
+        },
         callback: function(response: any) {
-          alert('Payment successful! Reference: ' + response.reference);
-          clearCart();
+          if (response.status === 'success') {
+            alert('Payment successful! Reference: ' + response.reference);
+            clearCart();
+            // Optionally redirect to a success page
+            // window.location.href = '/order-success';
+          } else {
+            alert('Payment failed. Please try again.');
+          }
         },
         onClose: function() {
-          alert('Payment window closed.');
+          // Handle what happens when the payment modal is closed
+          const userResponse = confirm('Are you sure you want to cancel the payment?');
+          if (userResponse) {
+            // Optionally handle cancelled payment
+            // You might want to mark the order as cancelled in your database
+          } else {
+            // Reopen the payment modal
+            handler.openIframe();
+          }
         },
       });
+  
       handler.openIframe();
     } catch (error) {
-      console.error('Error processing payment:', error);
-      alert('Error processing payment. Please try again.');
+      // Properly handle and display the error
+      console.error('Payment error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      alert(`Payment processing failed: ${errorMessage}`);
     }
   };
 
@@ -238,16 +366,20 @@ export default function Checkout() {
 
     try {
       await updateUserInfo();
+      const order = await createOrder();
       
       (window as any).FlutterwaveCheckout({
         public_key: import.meta.env.VITE_FLUTTERWAVE_PUBLIC_KEY,
-        tx_ref: Date.now().toString(),
+        tx_ref: order.order_number,
         amount: total,
         currency: 'NGN',
         payment_options: 'card,mobilemoney,ussd',
         customer: {
           email: shippingInfo.email,
           name: `${shippingInfo.firstName} ${shippingInfo.lastName}`,
+        },
+        meta: {
+          order_id: order.id
         },
         callback: function(response: any) {
           alert('Payment successful! Transaction ID: ' + response.transaction_id);
@@ -266,6 +398,8 @@ export default function Checkout() {
       alert('Error processing payment. Please try again.');
     }
   };
+
+  
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900/50 to-slate-900 py-12 mt-9">

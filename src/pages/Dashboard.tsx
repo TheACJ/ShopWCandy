@@ -36,7 +36,7 @@ interface Order {
   created_at: string;
   user_id: string;
   status: string;
-  total_amount: number;
+  total: number;
   customer_name: string;
 }
 
@@ -304,7 +304,7 @@ const OrdersTable = () => {
                       year: 'numeric'
                     })}
                   </td>
-                  <td className="px-4 py-3 text-indigo-100/80">₦{order.total_amount.toLocaleString()}</td>
+                  <td className="px-4 py-3 text-indigo-100/80">₦{order.total.toLocaleString()}</td>
                   <td className="px-4 py-3">
                     <StatusBadge status={order.status} />
                   </td>
@@ -343,12 +343,12 @@ const DashboardStats = () => {
       setLoading(true);
       
       const [ordersData, productsData, customersData] = await Promise.all([
-        supabase.from('orders').select('total_amount'),
+        supabase.from('orders').select('total'),
         supabase.from('products').select('count', { count: 'exact' }),
         supabase.from('user_info').select('count', { count: 'exact' })
       ]);
 
-      const totalRevenue = ordersData.data?.reduce((sum, order) => sum + order.total_amount, 0) || 0;
+      const totalRevenue = ordersData.data?.reduce((sum, order) => sum + order.total, 0) || 0;
       
       setStats({
         totalRevenue,
@@ -454,8 +454,8 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-slate-900 via-indigo-900/50 to-slate-900">
-      {/* Enhanced Sidebar */}
+    <div className="flex h-screen bg-gradient-to-br from-slate-900 via-indigo-900/50 to-slate-900 mt-20">
+      {/* Sidebar */}
       <div className="w-72 backdrop-blur-xl bg-black/30 border-r border-white/10">
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-center h-20 border-b border-white/10">
@@ -507,7 +507,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Enhanced Main Content */}
+      {/* Main Content */}
       <div className="flex-1 overflow-y-auto">
         <header className="backdrop-blur-xl bg-black/30 border-b border-white/10">
           <div className="px-8 py-6">

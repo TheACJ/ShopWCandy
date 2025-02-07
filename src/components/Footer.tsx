@@ -1,5 +1,6 @@
-import { Facebook, Instagram, Twitter, Mail, MapPin } from 'lucide-react';
+import { Facebook, Instagram, Twitter, Mail, MapPin, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import acj from '../logo.png';
 
 export default function Footer() {
   return (
@@ -109,7 +110,17 @@ export default function Footer() {
         <div className="border-t border-white/10 mt-16 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-white/60 text-sm font-light text-center">
-              © {new Date().getFullYear()} ShopWCandy Maison. All rights reserved.
+              © {new Date().getFullYear()} ShopWCandy Maison. All rights reserved.  <span className="flex items-center">
+            Built with <Heart className="h-4 w-4 mx-1 text-red-500 fill-current" /> by{' '} &nbsp;
+            <a 
+              href="https://theacj.com.ng" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="ml-1 text-white/60 hover:text-blue-800 transition-colors inline-block"
+            ><img src={acj} className="h-4 w-4 text-blue-600 inline" /> &nbsp;
+              The ACJ
+            </a>
+          </span>
             </p>
             <div className="flex items-center gap-6">
               <Link to="/privacy" className="text-white/60 hover:text-white transition-colors duration-300 text-sm font-light">
