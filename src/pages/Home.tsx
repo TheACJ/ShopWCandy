@@ -3,9 +3,9 @@ import { ShoppingBag, Truck, Shield, Clock, ArrowRight } from 'lucide-react';
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-900 mt-20">
       {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+      <section className="relative h-screen flex items-center justify-center overflow-hidden sm:overflow-auto">
         <div className="absolute inset-0">
           <img
             src="https://images.unsplash.com/photo-1616486029423-aaa4789e8c9a?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80"
@@ -17,7 +17,7 @@ export default function Home() {
         <div className="relative z-10 container mx-auto px-4">
           <div className="max-w-4xl backdrop-blur-xl bg-black/30 rounded-3xl p-12 border border-white/10 shadow-2xl">
             <div className="text-center space-y-8">
-              <h1 className="text-6xl md:text-7xl font-bold bg-gradient-to-r from-white to-indigo-200 bg-clip-text text-transparent leading-tight">
+              <h1 className="text-3xl md:text-7xl font-bold bg-gradient-to-r from-white to-indigo-200 bg-clip-text text-transparent leading-tight sm:text-4xl">
                 Redefining Luxury <br/> Fashion
               </h1>
               <p className="text-xl text-indigo-100/80 max-w-2xl mx-auto font-light">

@@ -52,7 +52,7 @@ export default function Products() {
     : products;
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900/50 to-slate-900 py-8">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900/50 to-slate-900 py-8 mt-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {/* Search and Filter Section */}
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">

@@ -59,7 +59,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900/50 to-slate-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900/50 to-slate-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8 mt-20">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="mt-6 text-center text-4xl font-bold bg-gradient-to-r from-indigo-400 to-white bg-clip-text text-transparent">
           Welcome Back

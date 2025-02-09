@@ -402,7 +402,7 @@ export default function Checkout() {
   
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900/50 to-slate-900 py-12 mt-9">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900/50 to-slate-900 py-12 mt-20 ">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-400 to-white bg-clip-text text-transparent mb-8">

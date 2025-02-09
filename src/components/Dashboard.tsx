@@ -105,7 +105,7 @@ export default function Dashboard() {
         <div className="backdrop-blur-xl bg-white/5 rounded-2xl p-8 border border-white/10 shadow-2xl mb-12">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-400 to-white bg-clip-text text-transparent">
+              <h1 className="text-1xl sm:text-4xl md:text-3xl font-bold bg-gradient-to-r from-indigo-400 to-white bg-clip-text text-transparent">
                 Welcome, {user?.email}
               </h1>
               <p className="text-indigo-200/80 mt-2 text-lg">
